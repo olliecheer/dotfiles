@@ -1,0 +1,31 @@
+# requirements
+
+neovim >= 0.7
+    release: "https://github.com/neovim/neovim/releases"
+    detailed: "https://github.com/neovim/neovim/wiki/Installing-Neovim"
+
+packer
+    git clone --depth 1 https://github.com/wbthomason/packer.nvim\
+        ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+
+nodejs >= 14.14
+    curl -sL install-node.vercel.app/lts | bash
+
+    curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash - &&\
+      sudo apt-get install -y nodejs
+
+clangd
+    release: "https://github.com/clangd/clangd/releases"
+    configuration: "https://clangd.llvm.org/config"
+    installation: "https://clangd.llvm.org/installation"
+
+ripgrep
+    release: "https://github.com/BurntSushi/ripgrep/releases"
+    guide: "https://github.com/BurntSushi/ripgrep#installation"
+
+
+# Coc extensions
+
+coc-json
+coc-pyright
+coc-lists
