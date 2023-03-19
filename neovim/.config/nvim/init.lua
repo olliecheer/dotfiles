@@ -6,49 +6,14 @@ vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
 vim.bo.softtabstop = 4
-vim.g.coc_node_args = {'--max-old-space-size=16000'}
 vim.cmd([[highlight NormalFloat ctermbg=DarkGrey]])
 
+-- Limit nodejs memory consumption in MB
+vim.g.coc_node_args = {'--max-old-space-size=4096'}
 
+-- Auto download coc extensions
+vim.g.coc_global_extensions = {'coc-json', 'coc-lists', 'coc-pyright'}
 
-vim.g.lightline = {
-  colorscheme = 'seoul256',
-  active = { left = { { 'mode', 'paste' }, { 'cocstatus', 'readonly', 'filename', 'modified' } } },
-  component_function = {
-      cocstatus = 'coc#status'
-  },
-}
-
-
-local ensure_packer = function()
-  local fn = vim.fn
-  local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-  if fn.empty(fn.glob(install_path)) > 0 then
-    fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-    vim.cmd [[packadd packer.nvim]]
-    return true
-  end
-  return false
-end
-
-local packer_bootstrap = ensure_packer()
-
-require('packer').startup(function(use)
-  use 'wbthomason/packer.nvim'
-  use {'neoclide/coc.nvim', branch = 'release'}
-  use 'tpope/vim-commentary'
-  use 'itchyny/lightline.vim'
-
-  if packer_bootstrap then
-    require('packer').sync()
-  end
-end)
-
-
-
-
-
--- below is coc.nvim configuration
 -- Some servers have issues with backup files, see #649
 vim.opt.backup = false
 vim.opt.writebackup = false
@@ -62,6 +27,34 @@ vim.opt.updatetime = 300
 vim.opt.signcolumn = "yes"
 
 local keyset = vim.keymap.set
+---@diagnostic disable-next-line: redefined-local
+local opts = {silent = true, nowait = true}
+-- Open CocList
+keyset("n", "<space>l", ":<C-u>CocList<cr>", opts)
+-- List diagnostics
+keyset("n", "<space>a", ":<C-u>CocList diagnostics<cr>", opts)
+-- List commands
+keyset("n", "<space>c", ":<C-u>CocList commands<cr>", opts)
+-- Search words in current document
+keyset("n", "<space>w", ":<C-u>CocList words<cr>", opts)
+-- Search symbols in current document
+keyset("n", "<space>o", ":<C-u>CocList outline<cr>", opts)
+-- Search symbols in current workspace
+keyset("n", "<space>s", ":<C-u>CocList -I symbols<cr>", opts)
+-- Search files in current workspace
+keyset("n", "<space>f", ":<C-u>CocList files<cr>", opts)
+-- Grep in current workspace
+keyset("n", "<space>g", ":<C-u>CocList grep<cr>", opts)
+-- List most-recently-used files
+keyset("n", "<space>m", ":<C-u>CocList mru<cr>", opts)
+-- Do default action for next item
+keyset("n", "<space>j", ":<C-u>CocNext<cr>", opts)
+-- Do default action for previous item
+keyset("n", "<space>k", ":<C-u>CocPrev<cr>", opts)
+-- Resume latest coc list
+keyset("n", "<space>p", ":<C-u>CocListResume<cr>", opts)
+-- List jump stack
+keyset("n", "<space>j", ":<C-u>jumps<cr>", opts)
 -- Autocomplete
 function _G.check_back_space()
     local col = vim.fn.col('.') - 1
@@ -206,27 +199,49 @@ vim.api.nvim_create_user_command("OR", "call CocActionAsync('runCommand', 'edito
 -- provide custom statusline: lightline.vim, vim-airline
 vim.opt.statusline:prepend("%{coc#status()}%{get(b:,'coc_current_function','')}")
 
--- Mappings for CoCList
--- code actions and coc stuff
----@diagnostic disable-next-line: redefined-local
-local opts = {silent = true, nowait = true}
-keyset("n", "<space>a", ":<C-u>CocList diagnostics<cr>", opts)
-keyset("n", "<space>c", ":<C-u>CocList commands<cr>", opts)
--- Search symbols in current document
-keyset("n", "<space>s", ":<C-u>CocList -I symbols<cr>", opts)
--- Do default action for next item
-keyset("n", "<space>j", ":<C-u>CocNext<cr>", opts)
--- Do default action for previous item
-keyset("n", "<space>k", ":<C-u>CocPrev<cr>", opts)
--- Resume latest coc list
-keyset("n", "<space>p", ":<C-u>CocListResume<cr>", opts)
--- Search words in current document
-keyset("n", "<space>w", ":<C-u>CocList words<cr>", opts)
--- Search files in current workspace
-keyset("n", "<space>f", ":<C-u>CocList files<cr>", opts)
--- Grep in current workspace
-keyset("n", "<space>g", ":<C-u>CocList grep<cr>", opts)
--- List most-recently-used files
-keyset("n", "<space>m", ":<C-u>CocList mru<cr>", opts)
--- Open CocList
-keyset("n", "<space>l", ":<C-u>CocList<cr>", opts)
+-- lightline.vim configuration
+vim.cmd([[
+function! CocCurrentFunction()
+    return get(b:, 'coc_current_function', '')
+endfunction
+
+let g:lightline = {
+      \ 'colorscheme': 'powerline',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'cocstatus', 'currentfunction', 'readonly', 'filename', 'modified' ] ],
+      \   'right': [ [ 'lineinfo' ],
+      \              [ 'percent' ],
+      \              [ 'fileformat', 'fileencoding', 'filetype'] ]
+      \ },
+      \ 'component_function': {
+      \   'cocstatus': 'coc#status',
+      \   'currentfunction': 'CocCurrentFunction',
+      \ },
+      \ }
+]])
+
+local ensure_packer = function()
+  local fn = vim.fn
+  local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+  if fn.empty(fn.glob(install_path)) > 0 then
+    fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+    vim.cmd [[packadd packer.nvim]]
+    return true
+  end
+  return false
+end
+
+local packer_bootstrap = ensure_packer()
+
+require('packer').startup(function(use)
+    use 'wbthomason/packer.nvim'
+    use {'neoclide/coc.nvim', branch = 'release'}
+    use 'tpope/vim-commentary'
+    use 'itchyny/lightline.vim'
+    use 'olliecheer/vim-diagon'
+
+  if packer_bootstrap then
+    require('packer').sync()
+  end
+end)
